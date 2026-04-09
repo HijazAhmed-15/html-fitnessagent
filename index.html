@@ -1,0 +1,649 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>FitAgent - AI-powered Personal Coach</title>
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <!-- Lucide Icons -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <!-- Custom Styles -->
+    <link rel="stylesheet" href="styles.css">
+</head>
+
+<body class="dark-mode">
+    <div id="toast-container" class="toast-container"></div>
+
+    <!-- Navigation Wrapper (Hidden on Onboarding) -->
+    <div id="app-navigation" class="hide">
+        <!-- Top Nav (Desktop & Tablet) -->
+        <header class="top-nav">
+            <div class="nav-brand">
+                <i data-lucide="activity"></i>
+                <h1>FitAgent</h1>
+            </div>
+            <nav class="desktop-nav">
+                <a href="#dashboard" class="nav-link active" data-target="dashboard">Dashboard</a>
+                <a href="#workout" class="nav-link" data-target="workout">Workout</a>
+                <a href="#meals" class="nav-link" data-target="meals">Meals</a>
+                <a href="#progress" class="nav-link" data-target="progress">Progress</a>
+                <a href="#vitals" class="nav-link" data-target="vitals">Vitals</a>
+                <a href="#chat" class="nav-link" data-target="chat">AI Coach</a>
+            </nav>
+            <div class="nav-actions">
+                <div class="flex items-center gap-2">
+                    <span id="nav-user-name" class="text-sm font-bold text-muted desktop-only">Profile</span>
+                    <div class="user-avatar" id="nav-user-avatar">?</div>
+                </div>
+                <button id="nav-settings-btn" class="icon-btn" aria-label="Settings">
+                    <i data-lucide="settings"></i>
+                </button>
+            </div>
+        </header>
+
+        <!-- Bottom Nav (Mobile Only) -->
+        <nav class="bottom-nav">
+            <a href="#dashboard" class="nav-link active" data-target="dashboard">
+                <i data-lucide="layout-dashboard"></i>
+                <span>Home</span>
+            </a>
+            <a href="#workout" class="nav-link" data-target="workout">
+                <i data-lucide="dumbbell"></i>
+                <span>Workout</span>
+            </a>
+            <a href="#meals" class="nav-link" data-target="meals">
+                <i data-lucide="utensils"></i>
+                <span>Meals</span>
+            </a>
+            <a href="#progress" class="nav-link" data-target="progress">
+                <i data-lucide="trending-up"></i>
+                <span>Stats</span>
+            </a>
+            <a href="#chat" class="nav-link" data-target="chat">
+                <i data-lucide="bot"></i>
+                <span>Coach</span>
+            </a>
+        </nav>
+    </div>
+
+    <!-- Main Content Area -->
+    <main id="app-content">
+
+        <!-- 1. ONBOARDING SCREEN -->
+        <section id="view-onboarding" class="view section-onboarding">
+            <div class="onboarding-container card glassmorphism">
+                <div class="onboarding-header">
+                    <div class="logo-large">
+                        <i data-lucide="activity"></i> FitAgent
+                    </div>
+                    <h2>Welcome to your transformation.</h2>
+                    <p>Let's personalize your AI coaching experience.</p>
+                </div>
+                <form id="onboarding-form">
+                    <div class="form-row flex-row">
+                        <div class="form-group flex-1">
+                            <label for="ob-name">Name</label>
+                            <input type="text" id="ob-name" required placeholder="e.g. Alex">
+                        </div>
+                        <div class="form-group flex-1">
+                            <label for="ob-age">Age</label>
+                            <input type="number" id="ob-age" required placeholder="Years">
+                        </div>
+                    </div>
+                    <div class="form-row flex-row">
+                        <div class="form-group flex-1">
+                            <label for="ob-gender">Gender</label>
+                            <select id="ob-gender" required>
+                                <option value="" disabled selected>Select</option>
+                                <option value="male">Male</option>
+                                <option value="female">Female</option>
+                                <option value="other">Other</option>
+                            </select>
+                        </div>
+                        <div class="form-group flex-1">
+                            <label for="ob-height">Height (cm)</label>
+                            <input type="number" id="ob-height" required placeholder="e.g. 175">
+                        </div>
+                        <div class="form-group flex-1">
+                            <label for="ob-weight">Weight (kg)</label>
+                            <input type="number" id="ob-weight" required placeholder="e.g. 78">
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label for="ob-goal">Primary Goal</label>
+                        <select id="ob-goal" required>
+                            <option value="lose">Weight Loss</option>
+                            <option value="gain" selected>Muscle Gain</option>
+                            <option value="maintain">Maintenance / Recomp</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="ob-activity">Activity Level</label>
+                        <select id="ob-activity" required>
+                            <option value="sedentary">Sedentary</option>
+                            <option value="light">Lightly Active</option>
+                            <option value="moderate" selected>Moderately Active</option>
+                            <option value="very">Very Active</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="ob-diet">Diet Preference</label>
+                        <select id="ob-diet" required>
+                            <option value="any" selected>No Restrictions</option>
+                            <option value="vegetarian">Vegetarian</option>
+                            <option value="vegan">Vegan</option>
+                            <option value="pescatarian">Pescatarian</option>
+                            <option value="keto">Keto</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="ob-allergies">Allergies (Optional)</label>
+                        <input type="text" id="ob-allergies" placeholder="e.g. Peanuts, Dairy">
+                    </div>
+                    <div class="form-row flex-row">
+                        <div class="form-group flex-1">
+                            <label for="ob-conditions">Health Conditions (Optional)</label>
+                            <input type="text" id="ob-conditions" placeholder="e.g. Hypertension">
+                        </div>
+                        <div class="form-group flex-1">
+                            <label for="ob-injuries">Injuries (Optional)</label>
+                            <input type="text" id="ob-injuries" placeholder="e.g. Bad lower back">
+                        </div>
+                    </div>
+                    <button type="submit" class="btn btn-primary btn-block btn-large mt-4">
+                        Get My Plan <i data-lucide="arrow-right"></i>
+                    </button>
+                </form>
+            </div>
+        </section>
+
+        <!-- 2. DASHBOARD -->
+        <section id="view-dashboard" class="view hide container">
+            <div class="dashboard-header mb-6">
+                <h2 id="greeting-title">Good morning!</h2>
+                <p class="text-muted" id="greeting-subtitle">Here's your plan for today.</p>
+            </div>
+
+            <div class="summary-cards grid-4 mb-8">
+                <!-- Calories Card -->
+                <div class="card stat-card glassmorphism">
+                    <div class="stat-icon bg-primary-10 text-primary"><i data-lucide="flame"></i></div>
+                    <div class="stat-content">
+                        <p class="stat-label">Calories</p>
+                        <h3 class="stat-value"><span id="dash-cal-eaten">0</span> <span class="text-sm text-muted">/
+                                <span id="dash-cal-target">2800</span></span></h3>
+                    </div>
+                    <div class="progress-bar mt-2">
+                        <div class="progress-fill bg-primary" id="dash-cal-prog" style="width: 0%"></div>
+                    </div>
+                </div>
+                <!-- Steps Card -->
+                <div class="card stat-card glassmorphism">
+                    <div class="stat-icon bg-success-10 text-success"><i data-lucide="footprints"></i></div>
+                    <div class="stat-content">
+                        <p class="stat-label">Steps</p>
+                        <h3 class="stat-value"><span id="dash-steps">0</span> <span class="text-sm text-muted">/
+                                10k</span></h3>
+                    </div>
+                    <div class="progress-bar mt-2">
+                        <div class="progress-fill bg-success" id="dash-steps-prog" style="width: 0%"></div>
+                    </div>
+                </div>
+                <!-- Water Card -->
+                <div class="card stat-card glassmorphism interactive" id="dash-water-btn">
+                    <div class="stat-icon bg-primary-10 text-primary" style="color: #3b82f6;"><i
+                            data-lucide="droplet"></i></div>
+                    <div class="stat-content">
+                        <p class="stat-label">Water</p>
+                        <h3 class="stat-value"><span id="dash-water">0</span><span class="text-sm text-muted">/8
+                                cups</span></h3>
+                    </div>
+                    <p class="text-xs text-muted mt-2 text-center" style="width: 100%;">Tap to log</p>
+                </div>
+                <!-- Sleep Card -->
+                <div class="card stat-card glassmorphism">
+                    <div class="stat-icon" style="background: rgba(139, 92, 246, 0.1); color: #8b5cf6;"><i
+                            data-lucide="moon"></i></div>
+                    <div class="stat-content">
+                        <p class="stat-label">Sleep</p>
+                        <h3 class="stat-value"><span id="dash-sleep">--</span><span class="text-sm text-muted">
+                                hrs</span></h3>
+                    </div>
+                </div>
+            </div>
+
+            <div class="grid-2">
+                <!-- Today's Focus -->
+                <div class="card glassmorphism focus-card hover-lift" onclick="navigateTo('workout')">
+                    <div class="card-header border-bottom">
+                        <h3><i data-lucide="dumbbell"></i> Today's Workout</h3>
+                        <span class="badge" id="dash-workout-type">Push Day</span>
+                    </div>
+                    <div class="card-body">
+                        <div class="focus-summary">
+                            <div class="focus-progress-circle pr-4">
+                                <canvas id="dash-workout-chart" width="60" height="60"></canvas>
+                            </div>
+                            <div class="focus-info">
+                                <p id="dash-workout-status">0 / 5 Exercises Done</p>
+                                <p class="text-sm text-muted mt-1">Tap to view full plan</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <!-- Meal Focus -->
+                <div class="card glassmorphism focus-card hover-lift" onclick="navigateTo('meals')">
+                    <div class="card-header border-bottom">
+                        <h3><i data-lucide="utensils"></i> Macros</h3>
+                    </div>
+                    <div class="card-body">
+                        <div class="macro-mini-bars">
+                            <div class="macro-row">
+                                <span>Protein</span>
+                                <div class="flex-1 px-4">
+                                    <div class="progress-bar">
+                                        <div class="progress-fill bg-danger" id="dash-macro-p" style="width: 0%"></div>
+                                    </div>
+                                </div>
+                                <span class="text-sm text-muted"><span id="dash-p-val">0</span>g</span>
+                            </div>
+                            <div class="macro-row mt-2">
+                                <span>Carbs</span>
+                                <div class="flex-1 px-4">
+                                    <div class="progress-bar">
+                                        <div class="progress-fill bg-success" id="dash-macro-c" style="width: 0%"></div>
+                                    </div>
+                                </div>
+                                <span class="text-sm text-muted"><span id="dash-c-val">0</span>g</span>
+                            </div>
+                            <div class="macro-row mt-2">
+                                <span>Fats</span>
+                                <div class="flex-1 px-4">
+                                    <div class="progress-bar">
+                                        <div class="progress-fill bg-warning" id="dash-macro-f" style="width: 0%"></div>
+                                    </div>
+                                </div>
+                                <span class="text-sm text-muted"><span id="dash-f-val">0</span>g</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- 3. TODAY'S WORKOUT PANEL -->
+        <section id="view-workout" class="view hide container">
+            <div class="view-header mb-6">
+                <div>
+                    <h2>Today's Workout</h2>
+                    <p class="text-muted" id="workout-desc">Push Day Focus</p>
+                </div>
+                <div class="completion-status">
+                    <span id="workout-progress-text">0/5</span>
+                </div>
+            </div>
+
+            <div class="card glassmorphism mb-6">
+                <div class="card-header">
+                    <h3>Exercises</h3>
+                </div>
+                <div class="exercise-list" id="exercise-list">
+                    <!-- JS populated -->
+                </div>
+            </div>
+
+            <button id="log-workout-btn" class="btn btn-primary btn-block btn-large outline-none disabled" disabled>
+                Complete Workout
+            </button>
+        </section>
+
+        <!-- 4. TODAY'S MEAL PLAN PANEL -->
+        <section id="view-meals" class="view hide container">
+            <div class="view-header mb-6 gap-4" style="flex-wrap: wrap;">
+                <div>
+                    <h2>Meal Plan</h2>
+                    <p class="text-muted">Stay on track with your macros</p>
+                </div>
+                <div class="macro-summary flex gap-4 text-sm bg-card p-3 rounded-card">
+                    <div class="macro-item"><strong class="text-danger" id="meal-p">0g</strong> P</div>
+                    <div class="macro-item"><strong class="text-success" id="meal-c">0g</strong> C</div>
+                    <div class="macro-item"><strong class="text-warning" id="meal-f">0g</strong> F</div>
+                </div>
+            </div>
+
+            <div class="meal-list grid-2 gap-4" id="meal-list">
+                <!-- JS Populated -->
+            </div>
+
+            <div class="card glassmorphism mt-6">
+                <div class="card-header">
+                    <h3>Daily Macro Progress</h3>
+                </div>
+                <div class="card-body macro-full-progress">
+                    <div class="macro-bar-group mb-4">
+                        <div class="flex justify-between mb-1"><span>Calories</span><span id="p-cal-text">0 /
+                                2800</span></div>
+                        <div class="progress-bar thick">
+                            <div class="progress-fill bg-primary" id="p-bar-cal" style="width: 0%"></div>
+                        </div>
+                    </div>
+                    <div class="macro-bar-group mb-4">
+                        <div class="flex justify-between mb-1"><span>Protein</span><span id="p-pro-text">0 / 180g</span>
+                        </div>
+                        <div class="progress-bar thick">
+                            <div class="progress-fill bg-danger" id="p-bar-pro" style="width: 0%"></div>
+                        </div>
+                    </div>
+                    <div class="macro-bar-group mb-4">
+                        <div class="flex justify-between mb-1"><span>Carbohydrates</span><span id="p-carb-text">0 /
+                                300g</span></div>
+                        <div class="progress-bar thick">
+                            <div class="progress-fill bg-success" id="p-bar-carb" style="width: 0%"></div>
+                        </div>
+                    </div>
+                    <div class="macro-bar-group">
+                        <div class="flex justify-between mb-1"><span>Fats</span><span id="p-fat-text">0 / 80g</span>
+                        </div>
+                        <div class="progress-bar thick">
+                            <div class="progress-fill bg-warning" id="p-bar-fat" style="width: 0%"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- 5. PROGRESS TRACKER PAGE -->
+        <section id="view-progress" class="view hide container">
+            <div class="view-header mb-6">
+                <h2>Progress Tracker</h2>
+            </div>
+
+            <div class="grid-3 mb-6">
+                <div class="card glassmorphism text-center p-4">
+                    <p class="text-muted text-sm uppercase">Body Fat %</p>
+                    <h2 class="mt-2 text-primary">14-16%</h2>
+                    <p class="text-xs text-muted mt-1">Estimated</p>
+                </div>
+                <div class="card glassmorphism text-center p-4">
+                    <p class="text-muted text-sm uppercase">Lean Mass</p>
+                    <h2 class="mt-2 text-success">66 kg</h2>
+                    <p class="text-xs text-muted mt-1">+1.2kg this mo</p>
+                </div>
+                <div class="card glassmorphism text-center p-4">
+                    <p class="text-muted text-sm uppercase">BMI</p>
+                    <h2 class="mt-2 text-warning">25.5</h2>
+                    <p class="text-xs text-muted mt-1">Healthy</p>
+                </div>
+            </div>
+
+            <div class="card glassmorphism mb-6">
+                <div class="card-header flex justify-between">
+                    <h3>Weight History</h3>
+                    <button class="btn btn-sm btn-outline" id="log-weight-btn">Log Today</button>
+                </div>
+                <div class="card-body relative" style="height: 300px;">
+                    <canvas id="weightChart"></canvas>
+                </div>
+            </div>
+
+            <div class="card glassmorphism mb-6">
+                <div class="card-header flex justify-between">
+                    <h3>Strength Progress (1RM)</h3>
+                    <button class="btn btn-sm btn-outline" id="log-strength-btn">Log Strength</button>
+                </div>
+                <div class="card-body relative" style="height: 300px;">
+                    <canvas id="strengthChart"></canvas>
+                </div>
+            </div>
+        </section>
+
+        <!-- 6. WEARABLES / VITALS PANEL -->
+        <section id="view-vitals" class="view hide container">
+            <div class="view-header mb-6 flex justify-between items-start" style="flex-wrap: wrap;">
+                <div>
+                    <h2>Vitals & Recovery</h2>
+                </div>
+                <div class="ble-connect-wrapper flex-col items-end">
+                    <button class="btn btn-outline btn-sm interactive" id="ble-connect-btn">
+                        <i data-lucide="bluetooth"></i> Connect Wearable
+                    </button>
+                    <span class="text-xs text-muted mt-1 hide" id="ble-status">Status: Disconnected</span>
+                </div>
+            </div>
+
+            <div class="card glassmorphism mb-8 relative overflow-hidden">
+                <div class="absolute right-0 top-0 opacity-10 pointer-events-none"
+                    style="transform: scale(3) translate(10%, -10%);">
+                    <i data-lucide="heart-pulse"></i>
+                </div>
+                <div class="card-body p-6 text-center">
+                    <h4 class="uppercase text-muted tracking-wide mb-2 text-sm">Recovery Score</h4>
+                    <div class="recovery-score-circle mx-auto my-4" id="recovery-circle">
+                        <span id="recovery-value">--</span>
+                    </div>
+                    <h3 id="recovery-status-text" class="mb-2">Fetching data...</h3>
+                    <p class="text-muted text-sm" id="recovery-tip">Update your vitals to calculate today's recovery.
+                    </p>
+                </div>
+            </div>
+
+            <h3 class="mb-4">Log Today's Vitals</h3>
+            <div class="grid-2 gap-4" id="vitals-form">
+                <div class="card glassmorphism p-4">
+                    <label class="block text-sm text-muted mb-2"><i data-lucide="moon" class="inline w-4 h-4 mr-1"></i>
+                        Sleep (Hours)</label>
+                    <div class="flex gap-2">
+                        <input type="number" step="0.1" id="vital-sleep" class="flex-1" placeholder="e.g. 7.5">
+                        <button class="btn btn-primary vital-save-btn" data-vital="sleep">Sync</button>
+                    </div>
+                </div>
+                <div class="card glassmorphism p-4">
+                    <label class="block text-sm text-muted mb-2"><i data-lucide="footprints"
+                            class="inline w-4 h-4 mr-1"></i> Steps Today</label>
+                    <div class="flex gap-2">
+                        <input type="number" id="vital-steps" class="flex-1" placeholder="e.g. 8500">
+                        <button class="btn btn-primary vital-save-btn" data-vital="steps">Sync</button>
+                    </div>
+                </div>
+                <div class="card glassmorphism p-4">
+                    <label class="block text-sm text-muted mb-2"><i data-lucide="activity"
+                            class="inline w-4 h-4 mr-1"></i> HRV (ms)</label>
+                    <div class="flex gap-2">
+                        <input type="number" id="vital-hrv" class="flex-1" placeholder="e.g. 58">
+                        <button class="btn btn-primary vital-save-btn" data-vital="hrv">Sync</button>
+                    </div>
+                </div>
+                <div class="card glassmorphism p-4">
+                    <label class="block text-sm text-muted mb-2"><i data-lucide="heart" class="inline w-4 h-4 mr-1"></i>
+                        Resting HR (bpm)</label>
+                    <div class="flex gap-2">
+                        <input type="number" id="vital-hr" class="flex-1" placeholder="e.g. 62">
+                        <button class="btn btn-primary vital-save-btn" data-vital="hr">Sync</button>
+                    </div>
+                </div>
+                <div class="card glassmorphism p-4 col-span-full">
+                    <label class="block text-sm text-muted mb-2"><i data-lucide="wind" class="inline w-4 h-4 mr-1"></i>
+                        SpO2 (%)</label>
+                    <div class="flex gap-2">
+                        <input type="number" id="vital-spo2" class="flex-1 focus:ring-primary" placeholder="e.g. 98">
+                        <button class="btn btn-primary vital-save-btn" data-vital="spo2">Sync</button>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- 7. AI COACH CHAT PANEL -->
+        <section id="view-chat" class="view hide container full-height-view flex-col">
+            <div class="view-header mb-4 flex-shrink-0 border-bottom pb-4">
+                <div class="flex items-center gap-3">
+                    <div class="avatar bg-primary text-white"><i data-lucide="bot"></i></div>
+                    <div>
+                        <h2 class="text-lg">FitAgent Coach</h2>
+                        <p class="text-xs text-success flex items-center gap-1"><span
+                                class="status-dot bg-success"></span> Online</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="chat-messages flex-1 overflow-y-auto pr-2 pb-4 flex flex-col gap-4" id="chat-messages">
+                <div class="message ai">
+                    <div class="msg-bubble">
+                        Hello! I'm your AI fitness coach. How can I help you crush your goals today?
+                    </div>
+                </div>
+            </div>
+
+            <div class="chat-input-area flex-shrink-0 pt-4 border-top">
+                <div class="quick-prompts mb-3 flex gap-2 overflow-x-auto pb-2 custom-scrollbar">
+                    <button class="chip prompt-chip">Create my workout plan</button>
+                    <button class="chip prompt-chip">What should I eat today?</button>
+                    <button class="chip prompt-chip">Analyze my progress</button>
+                    <button class="chip prompt-chip">I skipped yesterday — adjust plan</button>
+                </div>
+                <form id="chat-form" class="flex gap-2">
+                    <input type="text" id="chat-input" class="flex-1" placeholder="Ask your coach anything..."
+                        autocomplete="off">
+                    <button type="submit" class="btn btn-primary icon-btn h-12 w-12 flex-shrink-0" id="send-chat-btn"><i
+                            data-lucide="send"></i></button>
+                </form>
+            </div>
+        </section>
+
+        <!-- 8. SETTINGS PAGE -->
+        <section id="view-settings" class="view hide container">
+            <div class="view-header mb-6">
+                <h2>Settings</h2>
+            </div>
+
+            <div class="settings-group mb-6 card glassmorphism">
+                <div class="card-header pb-2">
+                    <h3 class="text-md">Profile Settings</h3>
+                </div>
+                <div class="card-body">
+                    <form id="settings-profile-form">
+                        <div class="grid-2 gap-4">
+                            <div class="form-group text-sm">
+                                <label>Name</label>
+                                <input type="text" id="set-name">
+                            </div>
+                            <div class="form-group text-sm">
+                                <label>Goal</label>
+                                <select id="set-goal">
+                                    <option value="lose">Weight Loss</option>
+                                    <option value="gain">Muscle Gain</option>
+                                    <option value="maintain">Maintenance / Recomp</option>
+                                </select>
+                            </div>
+                        </div>
+                        <button type="button" class="btn btn-sm btn-outline mt-2" id="save-profile-btn">Save
+                            Profile</button>
+                    </form>
+                </div>
+            </div>
+
+            <div class="settings-group mb-6 card glassmorphism">
+                <div class="card-header pb-2">
+                    <h3 class="text-md">Nutrition Targets (Overrides)</h3>
+                </div>
+                <div class="card-body">
+                    <div class="grid-2 gap-4">
+                        <div class="form-group text-sm">
+                            <label>Calories (kcal)</label>
+                            <input type="number" id="set-cal">
+                        </div>
+                        <div class="form-group text-sm">
+                            <label>Protein (g)</label>
+                            <input type="number" id="set-pro">
+                        </div>
+                        <div class="form-group text-sm">
+                            <label>Carbs (g)</label>
+                            <input type="number" id="set-carb">
+                        </div>
+                        <div class="form-group text-sm">
+                            <label>Fats (g)</label>
+                            <input type="number" id="set-fat">
+                        </div>
+                    </div>
+                    <button type="button" class="btn btn-sm btn-outline mt-2" id="save-targets-btn">Save
+                        Targets</button>
+                </div>
+            </div>
+
+            <div class="settings-group mb-6 card glassmorphism">
+                <div class="card-header pb-2">
+                    <h3 class="text-md">Preferences</h3>
+                </div>
+                <div class="card-body">
+                    <div class="flex justify-between items-center mb-4 border-bottom pb-4">
+                        <div>
+                            <strong>Theme</strong>
+                            <p class="text-xs text-muted">Switch between light and dark mode</p>
+                        </div>
+                        <label class="switch">
+                            <input type="checkbox" id="theme-toggle">
+                            <span class="slider round"></span>
+                        </label>
+                    </div>
+                </div>
+            </div>
+
+            <div class="settings-group card glassmorphism border-danger mt-10">
+                <div class="card-body text-center py-6">
+                    <h3 class="text-danger mb-2">Danger Zone</h3>
+                    <p class="text-xs text-muted mb-4">This will permanently delete all your data and start over.</p>
+                    <button id="reset-data-btn"
+                        class="btn bg-danger text-white border-none py-2 px-6 hover:bg-red-600 transition-colors">Reset
+                        All Data</button>
+                </div>
+            </div>
+        </section>
+
+    </main>
+
+    <!-- Modals -->
+    <div id="modal-backdrop" class="hide">
+        <!-- Log Weight Modal -->
+        <div id="modal-log-weight" class="modal card glassmorphism hide">
+            <h3>Log Today's Weight</h3>
+            <input type="number" step="0.1" id="input-new-weight" class="mt-4 mb-4" placeholder="Weight in kg">
+            <div class="flex gap-2">
+                <button class="btn btn-outline flex-1 close-modal">Cancel</button>
+                <button class="btn btn-primary flex-1" id="save-weight-btn">Save</button>
+            </div>
+        </div>
+
+        <!-- Log Strength Modal -->
+        <div id="modal-log-strength" class="modal card glassmorphism hide">
+            <h3>Log Strength 1RM</h3>
+            <div class="mb-4 mt-4 grid gap-3">
+                <div>
+                    <label class="text-xs mb-1 block">Bench Press (kg)</label>
+                    <input type="number" step="1" id="input-1rm-bench">
+                </div>
+                <div>
+                    <label class="text-xs mb-1 block">Squat (kg)</label>
+                    <input type="number" step="1" id="input-1rm-squat">
+                </div>
+                <div>
+                    <label class="text-xs mb-1 block">Deadlift (kg)</label>
+                    <input type="number" step="1" id="input-1rm-deadlift">
+                </div>
+            </div>
+            <div class="flex gap-2">
+                <button class="btn btn-outline flex-1 close-modal">Cancel</button>
+                <button class="btn btn-primary flex-1" id="save-strength-btn">Save</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Application Logic -->
+    <script src="app.js"></script>
+</body>
+
+</html>
